@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SisVenda{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Dashboard</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total de Produtos</h3>
+            <p id="total-produtos">Carregando...</p>
+        </div>
+        <div class="stat-card">
+            <h3>Vendas Hoje</h3>
+            <p id="vendas-hoje">Carregando...</p>
+        </div>
+        <div class="stat-card">
+            <h3>Valor Total Hoje</h3>
+            <p id="valor-hoje">Carregando...</p>
+        </div>
+        <div class="stat-card">
+            <h3>Produtos com Baixo Estoque</h3>
+            <p id="baixo-estoque">Carregando...</p>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <h2>Ações Rápidas</h2>
+        <div class="action-buttons">
+            <a href="/vendas" class="btn btn-primary">Nova Venda</a>
+            <a href="/produtos" class="btn btn-secondary">Gerenciar Produtos</a>
+            <a href="/relatorios" class="btn btn-info">Ver Relatórios</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function carregarDashboard() {
+        try {
+            const response = await fetch('/api/produtos');
+            const produtos = await response.json();
+            
+            // Total de produtos
+            document.getElementById('total-produtos').textContent = produtos.length;
+            
+            // Produtos com baixo estoque (menos de 10)
+            const baixoEstoque = produtos.filter(p => p.quantidade < 10).length;
+            document.getElementById('baixo-estoque').textContent = baixoEstoque;
+            
+            // Buscar vendas de hoje
+            const hoje = new Date().toISOString().split('T')[0];
+            const respVendas = await fetch(`/api/relatorios/vendas?data_inicio=${hoje}&data_fim=${hoje}`);
+            const vendasHoje = await respVendas.json();
+            
+            if (vendasHoje.length > 0) {
+                document.getElementById('vendas-hoje').textContent = vendasHoje[0].total_vendas;
+                document.getElementById('valor-hoje').textContent = `R$ ${vendasHoje[0].total_valor.toFixed(2)}`;
+            } else {
+                document.getElementById('vendas-hoje').textContent = '0';
+                document.getElementById('valor-hoje').textContent = 'R$ 0,00';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dashboard:', error);
+        }
+    }
+    
+    carregarDashboard();
+</script>
+{% endblock %}
