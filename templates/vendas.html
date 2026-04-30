@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Vendas - SisVenda{% endblock %}
+
+{% block content %}
+<div class="vendas-page">
+    <h1>Nova Venda</h1>
+    
+    <div class="venda-container">
+        <div class="produtos-disponiveis">
+            <h2>Produtos Disponíveis</h2>
+            <div id="lista-produtos" class="produtos-grid">
+                <!-- Carregado via JavaScript -->
+            </div>
+        </div>
+        
+        <div class="carrinho">
+            <h2>Carrinho</h2>
+            <div id="itens-carrinho">
+                <!-- Itens do carrinho -->
+            </div>
+            
+            <div class="total-venda">
+                <h3>Total: <span id="valor-total">R$ 0,00</span></h3>
+            </div>
+            
+            <button class="btn btn-success btn-block" onclick="finalizarVenda()">
+                Finalizar Venda
+            </button>
+        </div>
+    </div>
+    
+    <div class="vendas-recentes">
+        <h2>Vendas Recentes</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Data</th>
+                    <th>Total</th>
+                    <th>Itens</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-vendas">
+                <!-- Carregado via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let carrinho = [];
+    let produtos = [];
+    
+    async function carregarProdutos() {
+        try {
+            const response = await fetch('/api/produtos');
+            produtos = await response.json();
+            exibirProdutosDisponiveis();
+        } catch (error) {
+            console.error('Erro ao carregar produtos:', error);
+        }
+    }
+    
+    function exibirProdutosDisponiveis() {
+        const container = document.getElementById('lista-produtos');
+        container.innerHTML = '';
+        
+        produtos.forEach(produto => {
+            if (produto.quantidade > 0) {
+                const card = document.createElement('div');
+                card.className = 'produto-card';
+                card.innerHTML = `
+                    <h4>${produto.nome}</h4>
+                    <p>R$ ${produto.preco.toFixed(2)}</p>
+                    <small>Estoque: ${produto.quantidade}</small>
+                    <button class="btn btn-sm btn-primary" onclick="adicionarAoCarrinho(${produto.id})">
+                        Adicionar
+                    </button>
+                `;
+                container.appendChild(card);
+            }
+        });
+    }
+    
+    function adicionarAoCarrinho(produtoId) {
+        const produto = produtos.find(p => p.id === produtoId);
+        if (!produto) return;
+        
+        // Verificar se já está no carrinho
+        const itemExistente = carrinho.find(item => item.produto_id === produtoId);
+        
+        if (itemExistente) {
+            if (itemExistente.quantidade < produto.quantidade) {
+                itemExistente.quantidade++;
+            } else {
+                alert('Quantidade máxima disponível atingida!');
+                return;
+            }
+        } else {
+            carrinho.push({
+                produto_id: produto.id,
+                nome: produto.nome,
+                preco: produto.preco,
+                quantidade: 1
+            });
+        }
+        
+        atualizarCarrinho();
+    }
+    
+    function removerDoCarrinho(index) {
+        carrinho.splice(index, 1);
+        atualizarCarrinho();
+    }
+    
+    function atualizarCarrinho() {
+        const container = document.getElementById('itens-carrinho');
+        container.innerHTML = '';
+        
+        let total = 0;
+        
+        carrinho.forEach((item, index) => {
+            const subtotal = item.preco * item.quantidade;
+            total += subtotal;
+            
+            const div = document.createElement('div');
+            div.className = 'item-carrinho';
+            div.innerHTML = `
+                <div class="item-info">
+                    <strong>${item.nome}</strong>
+                    <p>R$ ${item.preco.toFixed(2)} x ${item.quantidade} = R$ ${subtotal.toFixed(2)}</p>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-sm btn-danger" onclick="removerDoCarrinho(${index})">Remover</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+        document.getElementById('valor-total').textContent = `R$ ${total.toFixed(2)}`;
+    }
+    
+    async function finalizarVenda() {
+        if (carrinho.length === 0) {
+            alert('Adicione itens ao carrinho!');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/vendas', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({itens: carrinho})
+            });
+            
+            const resultado = await response.json();
+            
+            if (resultado.sucesso) {
+                alert('Venda realizada com sucesso!');
+                carrinho = [];
+                atualizarCarrinho();
+                carregarProdutos();
+                carregarVendasRecentes();
+            } else {
+                alert('Erro ao realizar venda!');
+            }
+        } catch (error) {
+            console.error('Erro ao finalizar venda:', error);
+        }
+    }
+    
+    async function carregarVendasRecentes() {
+        try {
+            const response = await fetch('/api/vendas');
+            const vendas = await response.json();
+            
+            const tbody = document.getElementById('tabela-vendas');
+            tbody.innerHTML = '';
+            
+            vendas.slice(0, 10).forEach(venda => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${venda.id}</td>
+                    <td>${new Date(venda.data_venda).toLocaleString('pt-BR')}</td>
+                    <td>R$ ${venda.valor_total.toFixed(2)}</td>
+                    <td>${venda.quantidade_itens}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="verDetalhesVenda(${venda.id})">
+                            Detalhes
+                        </button>
+                    </td>
+                `;
+            });
+        } catch (error) {
+            console.error('Erro ao carregar vendas:', error);
+        }
+    }
+    
+    async function verDetalhesVenda(vendaId) {
+        try {
+            const response = await fetch(`/api/vendas/${vendaId}`);
+            const venda = await response.json();
+            
+            if (venda) {
+                let detalhes = `Venda #${venda.venda.id}\n`;
+                detalhes += `Data: ${new Date(venda.venda.data_venda).toLocaleString('pt-BR')}\n`;
+                detalhes += `Total: R$ ${venda.venda.valor_total.toFixed(2)}\n\n`;
+                detalhes += 'Itens:\n';
+                
+                venda.itens.forEach(item => {
+                    detalhes += `- ${item.produto_nome}: ${item.quantidade}x R$ ${item.preco_unitario.toFixed(2)} = R$ ${item.subtotal.toFixed(2)}\n`;
+                });
+                
+                alert(detalhes);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar detalhes:', error);
+        }
+    }
+    
+    // Inicializar
+    carregarProdutos();
+    carregarVendasRecentes();
+</script>
+{% endblock %}
