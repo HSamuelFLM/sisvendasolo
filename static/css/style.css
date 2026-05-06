@@ -12,10 +12,10 @@ body {
 
 /* Navbar */
 .navbar {
-    background: #2c3e50;
+    background: #8804f5;
     color: white;
     padding: 1rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-container {
@@ -48,7 +48,7 @@ body {
 }
 
 .nav-menu a:hover {
-    background: rgba(255,255,255,0.1);
+    background: #8804f5;
 }
 
 /* Container */
@@ -73,13 +73,39 @@ body {
     transform: translateY(-1px);
 }
 
-.btn-primary { background: #3498db; color: white; }
-.btn-secondary { background: #95a5a6; color: white; }
-.btn-success { background: #27ae60; color: white; }
-.btn-danger { background: #e74c3c; color: white; }
-.btn-info { background: #00bcd4; color: white; }
-.btn-sm { font-size: 0.85rem; padding: 0.3rem 0.6rem; }
-.btn-block { width: 100%; }
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-info {
+    background: #00bcd4;
+    color: white;
+}
+
+.btn-sm {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.btn-block {
+    width: 100%;
+}
 
 /* Dashboard */
 .stats-grid {
@@ -93,7 +119,7 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card h3 {
@@ -113,12 +139,12 @@ body {
     background: white;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     margin: 1rem 0;
 }
 
 .data-table th {
-    background: #2c3e50;
+    background: #8804f5;
     color: white;
     padding: 1rem;
     text-align: left;
@@ -165,7 +191,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s;
 }
 
@@ -242,20 +268,20 @@ body {
     background: white;
     padding: 1rem;
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s;
 }
 
 .produto-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .carrinho {
     background: white;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .item-carrinho {
@@ -287,7 +313,7 @@ body {
     padding: 1rem;
     background: white;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .relatorios-grid {
@@ -300,7 +326,7 @@ body {
     background: white;
     padding: 1.5rem;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Search Bar */
@@ -333,13 +359,25 @@ body {
 
 /* Animações */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideDown {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Responsividade */
@@ -347,15 +385,15 @@ body {
     .venda-container {
         grid-template-columns: 1fr;
     }
-    
+
     .relatorios-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .nav-menu {
         display: none;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
