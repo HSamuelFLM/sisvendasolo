@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes - SisVenda{% endblock %}
+
+{% block content %}
+<div class="clientes-page">
+    <div class="page-header">
+        <h1>Gerenciar Clientes</h1>
+        <button class="btn btn-primary" onclick="abrirModalCliente()">Novo Cliente</button>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="buscar-cliente" placeholder="Buscar cliente..."
+               onkeyup="filtrarClientes()">
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-clientes"></tbody>
+    </table>
+</div>
+
+<div id="modal-cliente" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModalCliente()">&times;</span>
+        <h2 id="modal-title">Novo Cliente</h2>
+
+        <form id="form-cliente">
+            <input type="hidden" id="cliente-id">
+
+            <div class="form-group">
+                <label>Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email">
+            </div>
+
+            <div class="form-group">
+                <label>Telefone:</label>
+                <input type="text" id="telefone">
+            </div>
+
+            <button type="submit" class="btn btn-success">Salvar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+let clientes = [];
+
+async function carregarClientes() {
+    try {
+        const response = await fetch('/api/clientes');
+        clientes = await response.json();
+        exibirClientes(clientes);
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+    }
+}
+
+function exibirClientes(lista) {
+
+    const tbody = document.getElementById('tabela-clientes');
+    tbody.innerHTML = '';
+
+    lista.forEach(cliente => {
+
+        const row = tbody.insertRow();
+
+        row.innerHTML = `
+            <td>${cliente.id}</td>
+            <td>${cliente.nome}</td>
+            <td>${cliente.email || '-'}</td>
+            <td>${cliente.telefone || '-'}</td>
+            <td>
+                <button class="btn btn-sm btn-info" onclick="editarCliente(${cliente.id})">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deletarCliente(${cliente.id})">Excluir</button>
+            </td>
+        `;
+    });
+}
+
+function filtrarClientes() {
+
+    const termo = document.getElementById('buscar-cliente').value.toLowerCase();
+
+    const filtrados = clientes.filter(c =>
+        c.nome.toLowerCase().includes(termo) ||
+        (c.email && c.email.toLowerCase().includes(termo)) ||
+        (c.telefone && c.telefone.includes(termo))
+    );
+
+    exibirClientes(filtrados);
+}
+
+function abrirModalCliente() {
+
+    document.getElementById('modal-title').textContent = 'Novo Cliente';
+
+    document.getElementById('form-cliente').reset();
+    document.getElementById('cliente-id').value = '';
+
+    document.getElementById('modal-cliente').style.display = 'block';
+}
+
+function fecharModalCliente() {
+    document.getElementById('modal-cliente').style.display = 'none';
+}
+
+async function editarCliente(id) {
+
+    const cliente = clientes.find(c => c.id === id);
+    if (!cliente) return;
+
+    document.getElementById('modal-title').textContent = 'Editar Cliente';
+
+    document.getElementById('cliente-id').value = cliente.id;
+    document.getElementById('nome').value = cliente.nome;
+    document.getElementById('email').value = cliente.email || '';
+    document.getElementById('telefone').value = cliente.telefone || '';
+
+    document.getElementById('modal-cliente').style.display = 'block';
+}
+
+async function deletarCliente(id) {
+
+    if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+
+    try {
+
+        const response = await fetch(`/api/clientes/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            carregarClientes();
+            alert('Cliente excluído com sucesso!');
+        }
+
+    } catch (error) {
+        console.error('Erro ao excluir cliente:', error);
+    }
+}
+
+document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+
+    e.preventDefault();
+
+    const id = document.getElementById('cliente-id').value;
+
+    const dados = {
+        nome: document.getElementById('nome').value,
+        email: document.getElementById('email').value,
+        telefone: document.getElementById('telefone').value
+    };
+
+    try {
+
+        let response;
+
+        if (id) {
+
+            response = await fetch(`/api/clientes/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            });
+
+        } else {
+
+            response = await fetch('/api/clientes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            });
+
+        }
+
+        if (response.ok) {
+            fecharModalCliente();
+            carregarClientes();
+            alert('Cliente salvo com sucesso!');
+        }
+
+    } catch (error) {
+        console.error('Erro ao salvar cliente:', error);
+    }
+});
+
+carregarClientes();
+
+</script>
+{% endblock %}
